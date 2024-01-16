@@ -45,7 +45,7 @@ steps:
         - run:
             name: install oras version << parameters.oras-version >>
             command: |
-              sudo bash -c "curl -L https://github.com/oras-project/oras/releases/download/v<< parameters.oras-version >>/oras_<< parameters.oras-version >>_linux_amd64.tar.gz"
+              sudo bash -c "curl -L https://github.com/oras-project/oras/releases/download/v<< parameters.oras-version >>/oras_<< parameters.oras-version >>_linux_amd64.tar.gz --output oras_<< parameters.oras-version >>_linux_amd64.tar.gz"
               mkdir -p oras-install
               tar -zxf oras_<< parameters.oras-version >>_*.tar.gz -C oras-install/
               sudo mv oras-install/oras /usr/local/bin/
