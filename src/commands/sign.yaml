@@ -40,6 +40,11 @@ parameters:
     type: boolean
     default: false
 
+  sbom-filename:
+    description: name of generate sbom file
+    type: string
+    default: sbom.spdx
+
   sbom-format:
     description: sbom format
     type: enum
