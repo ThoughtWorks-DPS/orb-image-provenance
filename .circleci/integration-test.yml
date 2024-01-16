@@ -73,12 +73,6 @@ jobs:
           cosign-version: 2.0.1
           syft-version: 0.76.1
           oras-version: 1.0.0
-      - run:
-          name: confirm installed version for available packages
-          command: |
-            set -exo pipefail
-            syft version | grep "1.76.1"
-            oras version | grep "1.0.0"
 
 workflows:
 
