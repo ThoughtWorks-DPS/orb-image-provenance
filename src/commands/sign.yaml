@@ -41,7 +41,7 @@ parameters:
     default: false
 
   sbom-format:
-    description: sbom format 
+    description: sbom format
     type: enum
     enum: [syft-json, cyclonedx-xml, cyclonedx-json, github-json, spdx-tag-value, spdx-json, syft-table, syft-text, template]
     default: cyclonedx-json
@@ -120,4 +120,4 @@ steps:
   - run:
       name: verify signature using public key
       command: |
-        cosign verify --key << parameters.verify-key >>  $(cat manifestid)
+        cosign verify --key << parameters.verify-key >> $(cat manifestid)
