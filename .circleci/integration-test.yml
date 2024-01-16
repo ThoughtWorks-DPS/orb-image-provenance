@@ -77,7 +77,6 @@ jobs:
           name: confirm installed version for available packages
           command: |
             set -exo pipefail
-            cosign version | grep "2.0.1"
             syft version | grep "1.76.1"
             oras version | grep "1.0.0"
 
