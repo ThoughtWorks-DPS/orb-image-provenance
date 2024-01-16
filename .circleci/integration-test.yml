@@ -32,8 +32,8 @@ jobs:
             docker build -t docker.io/twdps/orb-image-provenance:dev.${CIRCLE_SHA1:0:7} -f test/Dockerfile .
             docker push docker.io/twdps/orb-image-provenance:dev.${CIRCLE_SHA1:0:7}
       - image/sign:
-          registry: docker.io/twdps
-          image: orb-image-provenance
+          registry: docker.io
+          image: twdps/orb-image-provenance
           tag: dev.${CIRCLE_SHA1:0:7}
           sbom: true
 
