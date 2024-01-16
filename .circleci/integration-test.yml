@@ -4,6 +4,7 @@ version: 2.1
 orbs:
   image: twdps/image-provenance@dev:<<pipeline.git.revision>>
   op: twdps/onepassword@2.0.2
+  do: twdps/pipeline-events@3.0.0
 
 globals:
   - &context orb-publishing
@@ -18,6 +19,7 @@ jobs:
       - setup_remote_docker
       - op/env:
           env-file: op.env
+      - do/set-docker-credentials
       - op/write:
           op-value: empc-lab/svc-cosign-private-key/notesPlain
           out-file: cosign.key
