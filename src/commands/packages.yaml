@@ -1,0 +1,53 @@
+# src/commands/packages.yaml
+# yamllint disable rule:line-length
+---
+description: |
+  Manages installation of packages used by the image-provenance orb on custom Linux executors.  
+
+parameters:
+
+  cosign-version:
+    description: version to install
+    type: string
+
+  syft-version:
+    description: version to install
+    type: string
+
+  oras-version:
+    description: version to install
+    type: string
+
+steps:
+  - when:
+      name: install cosign
+      condition: << parameters.cosign-version >>
+      steps:
+        - run:
+            name: install cosign version << parameters.cosign-version >>
+            command: |
+              sudo bash -c "curl -L https://github.com/sigstore/cosign/releases/download/v<< parameters.cosign-version >>/cosign-linux-amd64 --output cosign"
+              chmod +x cosign && sudo mv cosign /usr/local/bin/cosign
+              cosign version
+  - when:
+      name: install syft
+      condition: << parameters.syft-version >>
+      steps:
+        - run:
+            name: install syft version << parameters.syft-version >>
+            command: |
+              sudo bash -c "curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin << parameters.syft-version >>"
+              syft version
+  - when:
+      name: install oras
+      condition: << parameters.cosign-version >>
+      steps:
+        - run:
+            name: install oras version << parameters.oras-version >>
+            command: |
+              sudo bash -c "curl -L https://github.com/oras-project/oras/releases/download/v<< parameters.oras-version >>/oras_<< parameters.oras-version >>_linux_amd64.tar.gz"
+              mkdir -p oras-install
+              tar -zxf oras_<< parameters.oras-version >>_*.tar.gz -C oras-install/
+              sudo mv oras-install/oras /usr/local/bin/
+              rm -rf oras_<< parameters.oras-version >>_*.tar.gz oras-install/
+              oras version
