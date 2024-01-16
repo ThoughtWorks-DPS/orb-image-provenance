@@ -1,0 +1,123 @@
+# src/commands/sign.yaml
+# yamllint disable rule:line-length
+---
+description: |
+  Sign oci image and store signature in registry.
+
+  Assumptions:
+  - signing key is available on sign-key path. default is ./cosign.key
+  - verify key is available on verify-key path. default it ./cosign.pub
+  - passphrase for key is available in ENV var COSIGN_PASSWORD
+  - registry credentials are avalable for storing signature
+  - optional: include sbom as annotation
+
+parameters:
+
+  registry:
+    description: full registry path for writing signature
+    type: string
+
+  registry-login:
+    description: username for reigstry access
+    type: env_var_name
+    default: DOCKER_LOGIN
+
+  registry-password:
+    description: password for registry access
+    type: env_var_name
+    default: DOCKER_PASSWORD
+
+  image:
+    description: Name of image
+    type: string
+
+  tag:
+    description: Value for tag
+    type: string
+
+  sbom:
+    description: include a software bill of materials with the signature
+    type: boolean
+    default: false
+
+  sbom-format:
+    description: sbom format 
+    type: enum
+    enum: [syft-json, cyclonedx-xml, cyclonedx-json, github-json, spdx-tag-value, spdx-json, syft-table, syft-text, template]
+    default: cyclonedx-json
+
+  attestations:
+    description: attestations to include in signature
+    type: string
+    default: ""
+
+  sign-key:
+    description: path to private key used to sign image
+    type: string
+    default: cosign.key
+
+  verify-key:
+    description: path to public key used to verify signature
+    type: string
+    default: cosign.pub
+
+steps:
+  - run:
+      name: Confirm Docker registry credentials are configured and correct
+      command: |
+        if [ ! ${<< parameters.registry-login >>-} ]; then
+          echo "registry access username is not set, will not be able to push signature."
+          exit 1
+        fi
+
+        if [ ! ${<< parameters.registry-password >>-} ]; then
+          echo "registry access password is not set, will not be able to push signature."
+          exit 1
+        fi
+        echo 'write to .docker/config.json is secure in ephemeral runtime environment'
+        echo ${<< parameters.registry-password >>} | docker login -u ${<< parameters.registry-login >>} --password-stdin << parameters.registry >>
+  - run:
+      name: Confirm signing parameters are set; key path, COSIGN_PASSWORD
+      command: |
+        if [ ! -f << parameters.sign-key >> ]; then
+          echo "signing key not available; not able to sign image."
+          exit 1
+        fi
+
+        if [ ! -f << parameters.verify-key >> ]; then
+          echo "verification key not available; not able to validate signing process."
+          exit 1
+        fi
+
+        if [ ! ${COSIGN_PASSWORD-} ]; then
+          echo "signing key passphrase is not available; not able to sign image."
+          exit 1
+        fi
+  - run:
+      name: get image manifest id
+      command: docker image inspect --format='{{index .RepoDigests 0}}' << parameters.registry >>/<< parameters.image >>:<< parameters.tag >> > manifestid
+  - when:
+      condition: << parameters.sbom >>
+      steps:
+        - run:
+            name: generate sbom using syft
+            command: syft packages --output cyclonedx-json $(cat manifestid) > sbom.json
+        - run:
+            name: Sign oci image, including sbom in the signature annotations, and store signature to registry
+            command: |
+              cosign sign --key cosign.key \
+                          --annotations sbom="$(cat sbom.json)" \
+                          $(cat manifestid) -y
+  - unless:
+      condition: << parameters.sbom >>
+      steps:
+        - run:
+            name: Sign oci image and store signature to registry
+            command: |
+              cosign sign --key << parameters.sign-key >> \
+                  <<#parameters.attestations>> << parameters.attestations >> <</parameters.attestations>> \
+                  $(cat manifestid) -y
+  - run:
+      name: verify signature using public key
+      command: |
+        cosign verify --key << parameters.verify-key >>  $(cat manifestid)

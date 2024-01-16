@@ -8,60 +8,30 @@ orbs:
 globals:
   - &context orb-publishing
 
-commands:
-
-  set-environment:
-    steps:
-      - op/env:
-          env-file: op.env
-
-  echo-message:
-    parameters:
-      msg:
-        type: string
-    steps:
-      - run:
-          name: echo msg
-          command: echo "<< parameters.msg >>"
-
 jobs:
 
-  # test commands:
-  #   docker:
-  #     - image: twdps/circleci-executor-builder:alpine-stable
-  #   steps:
-  #     - checkout
-  #     - setup_remote_docker
-  #     - set-environment
-  #     - executor-tools/lint:
-  #         dockerfile: test/Dockerfile.alpine
-  #         hadolint-additional-args: "--ignore DL3004"
-  #     - executor-tools/confirm-registry
-  #     - executor-tools/cis-scan:
-  #         dockerfile: test/Dockerfile.alpine
-  #     - executor-tools/build:
-  #         dockerfile: test/Dockerfile.build
-  #         image: twdps/orb-executor-tools
-  #     - executor-tools/snyk-scan:
-  #           image: twdps/orb-executor-tools
-  #           tag: dev.${CIRCLE_SHA1:0:7}
-  #           dockerfile: test/Dockerfile.build
-  #           snyk-severity-threshold: medium
-  #           snyk-organization: twdps
-  #     - executor-tools/trivy-scan:
-  #           image: twdps/orb-executor-tools
-  #           tag: dev.${CIRCLE_SHA1:0:7}
-  #           dockerfile: test/Dockerfile.build
-  #     - executor-tools/grype-scan:
-  #           image: twdps/orb-executor-tools
-  #           tag: dev.${CIRCLE_SHA1:0:7}
-  #           dockerfile: test/Dockerfile.build
-  #     - executor-tools/bats:
-  #           image: twdps/orb-executor-tools
-  #           tag: dev.${CIRCLE_SHA1:0:7}
-  #           bats-run-container-name: orb-executor-tools-test
-  #           bats-entry-point: /bin/ash
-  #           bats-test-path: test/circleci_remote_docker_alpine.bats
+  test commands:
+    docker:
+      - image: twdps/circleci-executor-builder:alpine-stable
+    steps:
+      - checkout
+      - setup_remote_docker
+      - op/env:
+          env-file: op.env
+      - op/write:
+          op-value: op://empc-lab/svc-cosign-private-key/notesPlain
+          out-file: cosign.key
+      - op/write:
+          op-value: op://empc-lab/svc-cosign-public-key/notesPlain
+          out-file: cosign.pub
+      - run:
+          name: build an OCI image text fixture
+          command: docker build -t twdps/orb-image-provenance:dev.${CIRCLE_SHA1:0:7} -f test/Dockerfile .
+      - image/sign:
+          registry: docker.io/twdps
+          image: orb-image-provenance
+          tag: dev.${CIRCLE_SHA1:0:7}
+          sbom: true
 
   test machine packages:
     machine:
@@ -78,7 +48,6 @@ workflows:
 
   integration tests:
     jobs:
-      # - test commands:
-      #     context: *context
-
+      - test commands:
+          context: *context
       - test machine packages
