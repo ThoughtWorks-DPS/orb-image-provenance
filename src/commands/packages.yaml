@@ -2,7 +2,7 @@
 # yamllint disable rule:line-length
 ---
 description: |
-  Manages installation of packages used by the image-provenance orb on custom Linux executors.  
+  Manages installation of packages used by the image-provenance orb on custom Linux executors.
 
 parameters:
 
