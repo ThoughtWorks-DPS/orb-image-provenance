@@ -1,3 +1,17 @@
+# src/commands/sbom.yaml
+# yamllint disable rule:line-length
+---
+description: |
+  Generate oci image software bill-of-materials and store signature in registry.
+
+  Assumptions:
+    - uses sfyt to generate sbom and oras to write to registry
+    - image manifest id file is available in pwd
+    - registry is dtr 2.0 compatible
+
+parameters:
+
+
 steps:
   - run:
       name: generate sbom

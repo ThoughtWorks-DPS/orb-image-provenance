@@ -19,10 +19,10 @@ jobs:
       - op/env:
           env-file: op.env
       - op/write:
-          op-value: op://empc-lab/svc-cosign-private-key/notesPlain
+          op-value: empc-lab/svc-cosign-private-key/notesPlain
           out-file: cosign.key
       - op/write:
-          op-value: op://empc-lab/svc-cosign-public-key/notesPlain
+          op-value: empc-lab/svc-cosign-public-key/notesPlain
           out-file: cosign.pub
       - run:
           name: build an OCI image text fixture
