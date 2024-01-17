@@ -4,7 +4,7 @@ version: 2.1
 orbs:
   image: twdps/image-provenance@dev:<<pipeline.git.revision>>
   op: twdps/onepassword@2.0.2
-  do: twdps/pipeline-events@3.0.0
+  do: twdps/pipeline-events@3.2.1
 
 globals:
   - &context orb-publishing
