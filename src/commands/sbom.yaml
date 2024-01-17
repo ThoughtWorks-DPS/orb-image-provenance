@@ -26,6 +26,12 @@ parameters:
     type: env_var_name
     default: DOCKER_PASSWORD
 
+  sbom-format:
+    description: sbom format
+    type: enum
+    enum: [syft-json, cyclonedx-xml, cyclonedx-json, github-json, spdx-tag-value, spdx-json, syft-table, syft-text, template]
+    default: cyclonedx-json
+
   sbom-filename:
     description: name of generate sbom file
     type: string
@@ -34,7 +40,7 @@ parameters:
 steps:
   - run:
       name: generate sbom
-      command: syft packages --verbose --output spdx-json $(cat manifestid) > << parameters.sbom-filename >>
+      command: syft packages --verbose --output << parameters.sbom-format >> $(cat manifestid) > << parameters.sbom-filename >>
   - run:
       name: push sbom to container registry
       command: |
