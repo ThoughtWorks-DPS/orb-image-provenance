@@ -43,7 +43,7 @@ steps:
               syft version
   - when:
       name: install oras
-      condition: << parameters.cosign-version >>
+      condition: << parameters.oras-version >>
       steps:
         - run:
             name: install oras version << parameters.oras-version >>
