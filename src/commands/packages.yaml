@@ -9,14 +9,17 @@ parameters:
   cosign-version:
     description: version to install
     type: string
+    default: ""
 
   syft-version:
     description: version to install
     type: string
+    default: ""
 
   oras-version:
     description: version to install
     type: string
+    default: ""
 
 steps:
   - when:
